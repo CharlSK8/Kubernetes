@@ -1,0 +1,9 @@
+FROM golang:1.16 as build
+WORKDIR /app
+COPY ./src .
+RUN CGO_ENABLED=0 GOOS=linux GOPROXY=https://proxy.golang.org go build -o app ./main.go
+
+FROM alpine:latest  
+WORKDIR /app
+COPY --from=build /app/app .
+CMD ["./app"]

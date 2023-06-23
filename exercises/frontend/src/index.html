@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Obtener la hora</title>
+</head>
+<body>
+  <div id="result"></div>
+
+  <script>
+    function displayTime(time) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '<h1>La hora es: ' + time + '</h1>';
+    }
+
+    function handleError(error) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '<h1>Error en la solicitud: ' + error + '</h1>';
+    }
+
+    function makeRequest() {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'http://10.104.254.72', true);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          displayTime(response.time);
+        } else {
+          handleError('Error en la solicitud. Estado: ' + xhr.status);
+        }
+      };
+      xhr.onerror = function() {
+        handleError('Error en la solicitud.');
+      };
+      xhr.send();
+    }
+
+    makeRequest();
+  </script>
+</body>
+</html>
+
