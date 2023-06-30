@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: qa
+  labels:
+    name: qa
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: res-high
+  namespace: qa
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    pods: "2"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-qa
+  namespace: qa
+  labels:
+    app: test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: front
+  template:
+    metadata:
+      labels:
+        app: front
+    spec:
+      containers:
+      - name: container-qa
+        image: nginx:alpine
+        resources:
+          limits:
+            memory: "250M"
+            cpu: "250m"
