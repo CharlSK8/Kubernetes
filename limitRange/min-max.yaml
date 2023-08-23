@@ -14,7 +14,7 @@ spec:
   limits:
     - max:
         memory: 1Gi
-        cpu: 1
+        cpu: "1"
       min:
         memory: 100M
         cpu: 100m

@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-pod
+  labels:
+    app: configmap
+data:
+  test: configmap-test
+  nginx: |
+    server {
+    listen 9090;
+    server_name localhost;
+    
+    location / {
+        root /usr/share/nginx/html;
+        index index.html index.htm;
+      }
+       
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vars
+  labels:
+    app: front
+data:
+  db_host: dev.host.local
+  db_user: dev_user
+  scrip: |
+    echo db host $DB_HOST, y db username $DB_USERNAME >> /usr/share/nginx/html/test.html
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-configmap
+  labels:
+    app: front-configmap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front
+  template:
+    metadata:
+      labels:
+        app: front
+    spec:
+      containers:
+        - name: container-front
+          image: nginx:alpine
+          env:
+          - name: DB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: vars      
+                key: db_host
+          - name: DB_USER
+            valueFrom:
+              configMapKeyRef:
+                name: vars      
+                key: db_user
+          volumeMounts:
+          - name: nginx-volum
+            mountPath: "/etc/nginx/conf.d"
+          - name: scrip-volum
+            mountPath: "/opt"
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      volumes:
+      - name: nginx-volum
+        configMap:
+          name: configmap-pod
+          items:
+          - key: nginx
+            path: default.conf
+      - name: scrip-volum
+        configMap:
+          name: vars
+          items:
+          - key: scrip
+            path: scrip.sh
